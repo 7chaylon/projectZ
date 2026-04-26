@@ -1,7 +1,16 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthLayout } from "../components/AuthLayout";
+import { FormCard } from "../components/FormCard";
+import { Input } from "../components/Input";
+import { Button } from "../components/Button";
+import { Toast } from "../components/Toast";
 
 export function ForgotPassword() {
+  const [toast, setToast] = useState(null);
   const [email, setEmail] = useState("");
+
+  const navigate = useNavigate();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -15,25 +24,47 @@ export function ForgotPassword() {
     });
 
     if (!res.ok) {
-      alert("Erro ao enviar email");
+      setToast({ message: "Erro ao enviar email", type: "error" });
       return;
     }
 
-    alert("Email enviado! Verifique sua caixa de entrada.");
+    setToast({
+      message: "Email enviado! Verifique sua caixa de entrada.",
+      type: "success",
+    });
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h1>Recuperar senha</h1>
+    <AuthLayout>
+      <FormCard
+        title="Recuperar senha"
+        subtitle="Informe seu email para receber o link"
+      >
+        <form onSubmit={handleSubmit} className="form-group">
+          <Input
+            type="email"
+            placeholder="Digite seu email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-      <input
-        type="email"
-        placeholder="Digite seu email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
+          <Button type="submit">Enviar link</Button>
+        </form>
 
-      <button type="submit">Enviar</button>
-    </form>
+        <div className="auth-footer">
+          <Button variant="secondary" onClick={() => navigate("/")}>
+            Voltar para login
+          </Button>
+        </div>
+      </FormCard>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+    </AuthLayout>
   );
 }
