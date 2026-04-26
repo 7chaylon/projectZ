@@ -1,47 +1,63 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { AuthLayout } from "../components/AuthLayout";
+import { FormCard } from "../components/FormCard";
+import { Input } from "../components/Input";
+import { Button } from "../components/Button";
+import { Toast } from "../components/Toast";
 
 export function ResetPassword() {
+  const [toast, setToast] = useState(null);
+  const [password, setPassword] = useState("");
+
   const { token } = useParams();
   const navigate = useNavigate();
-
-  const [password, setPassword] = useState("");
 
   async function handleSubmit(e) {
     e.preventDefault();
 
-    const res = await fetch(
-      `http://localhost:3000/reset-password/${token}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ password }),
-      }
-    );
+    const res = await fetch(`http://localhost:3000/reset-password/${token}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ password }),
+    });
 
     if (!res.ok) {
-      alert("Token inválido ou expirado");
+      setToast({ message: "Token inválido ou expirado", type: "error" });
       return;
     }
 
-    alert("Senha redefinida com sucesso!");
-    navigate("/");
+    setToast({ message: "Senha redefinida com sucesso!", type: "success" });
+
+    setTimeout(() => {
+      navigate("/");
+    }, 700);
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h1>Nova senha</h1>
+    <AuthLayout>
+      <FormCard title="Nova senha" subtitle="Crie uma nova senha de acesso">
+        <form onSubmit={handleSubmit} className="form-group">
+          <Input
+            type="password"
+            placeholder="Nova senha"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-      <input
-        type="password"
-        placeholder="Digite nova senha"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+          <Button type="submit">Salvar nova senha</Button>
+        </form>
+      </FormCard>
 
-      <button type="submit">Salvar</button>
-    </form>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+    </AuthLayout>
   );
 }

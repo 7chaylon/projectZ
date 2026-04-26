@@ -1,8 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthLayout } from "../components/AuthLayout";
+import { FormCard } from "../components/FormCard";
+import { Input } from "../components/Input";
+import { Button } from "../components/Button";
+import { Toast } from "../components/Toast";
 
 export function Login() {
-  const [username, setUsername] = useState("");
+  const [toast, setToast] = useState(null);
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const navigate = useNavigate();
@@ -16,45 +22,58 @@ export function Login() {
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({
-        username,
-        password,
-      }),
+      body: JSON.stringify({ email, password }),
     });
 
     if (!response.ok) {
-      alert("Erro no login");
+      setToast({ message: "Email ou senha inválidos", type: "error" });
       return;
     }
-
+    setToast({ message: "Login realizado!", type: "success" });
     navigate("/home");
   }
 
   return (
-    <div>
-      <form onSubmit={handleLogin}>
-        <h1>Login</h1>
+    <AuthLayout>
+      <FormCard title="Entrar" subtitle="Acesse sua conta para continuar">
+        <form onSubmit={handleLogin} className="form-group">
+          <Input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-        <input
-          placeholder="Usuário"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          <Input
+            type="password"
+            placeholder="Senha"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <Button type="submit">Entrar</Button>
+        </form>
+
+        <div className="auth-footer">
+          <Button variant="secondary" onClick={() => navigate("/register")}>
+            Criar conta
+          </Button>
+
+          <Button
+            variant="secondary"
+            onClick={() => navigate("/forgot-password")}
+          >
+            Esqueci minha senha
+          </Button>
+        </div>
+      </FormCard>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
         />
-
-        <input
-          placeholder="Senha"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-
-        <button type="submit">Entrar</button>
-      </form>
-      <button onClick={() => navigate("/Register")}>Criar conta</button>
-      <p>Esqueceu sua senha?</p>
-      <button onClick={() => navigate("/forgot-password")}>
-        Recuperar senha
-      </button>
-    </div>
+      )}
+    </AuthLayout>
   );
 }
